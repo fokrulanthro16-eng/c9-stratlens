@@ -1,0 +1,19 @@
+# Python environment
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.pytest_cache/
+
+# Sky's The Limit 2026 hackathon proprietary GRID data (NEVER commit)
+stl-hackathon-2026-grid-starter/
+*.zst
+*.jsonl
+*.parquet
+*.sqlite
+*.duckdb
+
+# Keep .idea/ tracked in Git as evidence of JetBrains IDE workflow
+!.idea/

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>C9 StratLens — VALORANT & Game Changers Tactical Scouting</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #070b14; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; }
+    .c9-card { background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(56, 189, 248, 0.2); }
+    .c9-glow { box-shadow: 0 0 24px rgba(14, 165, 233, 0.14); }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-6">
+  <header class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-6 border-b border-slate-800">
+    <div>
+      <div class="flex items-center gap-2.5">
+        <span class="px-2.5 py-0.5 text-xs font-bold tracking-wider uppercase rounded bg-sky-500/20 text-sky-400 border border-sky-400/30">Cloud9 × JetBrains</span>
+        <span id="streamBadge" class="px-2.5 py-0.5 text-xs font-semibold rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">GRID .ZST STREAM</span>
+      </div>
+      <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-white mt-1.5">C9 StratLens <span class="text-sky-400">Tactical Scouting War-Room</span></h1>
+      <p class="text-xs md:text-sm text-slate-400 mt-0.5">Category 1: Utility Placement & 3D Aim Vector Engine + Operator Tendency & Sniper Profiler</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2.5">
+      <label class="flex items-center gap-2 text-xs text-slate-300 bg-slate-900 px-3 py-2 rounded-lg border border-slate-800 cursor-pointer">
+        <input id="c9OnlyToggle" type="checkbox" checked class="accent-sky-400" />
+        <span>Cloud9 / C9 GC</span>
+      </label>
+      <select id="seriesSelect" class="bg-slate-900 border border-sky-500/40 text-xs md:text-sm text-white rounded-lg px-3 py-2 max-w-[300px] focus:outline-none">
+        <option>Loading GRID series...</option>
+      </select>
+      <select id="mapSelect" class="bg-slate-900 border border-emerald-500/40 text-xs md:text-sm text-emerald-300 font-semibold rounded-lg px-3 py-2 uppercase focus:outline-none">
+        <option value="">Map 1</option>
+      </select>
+      <button id="copyBriefBtn" class="bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs px-3.5 py-2 rounded-lg transition">
+        Copy Coach Brief
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto mt-6 space-y-6">
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="c9-card c9-glow rounded-xl p-4">
+        <p class="text-xs uppercase tracking-wider text-slate-400">Match & Selected Map</p>
+        <p id="kpiTeams" class="text-lg font-bold text-white mt-1 truncate">—</p>
+        <p id="kpiMap" class="text-xs text-sky-400 mt-0.5 uppercase font-semibold">—</p>
+      </div>
+      <div class="c9-card rounded-xl p-4">
+        <p class="text-xs uppercase tracking-wider text-slate-400">3D Supplemented Utility Casts</p>
+        <p id="kpiCasts" class="text-2xl font-extrabold text-sky-400 mt-1">—</p>
+        <p id="kpiMatchRate" class="text-xs text-emerald-400 mt-0.5">3D Aim Vector Sync: —</p>
+      </div>
+      <div class="c9-card rounded-xl p-4">
+        <p class="text-xs uppercase tracking-wider text-slate-400">Operator Rounds / Opening Duels</p>
+        <p id="kpiOpBuys" class="text-2xl font-extrabold text-amber-400 mt-1">—</p>
+        <p id="kpiDuels" class="text-xs text-slate-400 mt-0.5">Reverted Purchases Filtered: —</p>
+      </div>
+      <div class="c9-card rounded-xl p-4">
+        <p class="text-xs uppercase tracking-wider text-slate-400">GRID Feed Integrity Guard</p>
+        <p id="kpiRollback" class="text-lg font-bold text-emerald-400 mt-1">Verified Stream</p>
+        <p class="text-xs text-slate-400 mt-0.5">Rollback & Undo State Active</p>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 c9-card rounded-xl p-4 flex flex-col">
+        <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-800">
+          <div>
+            <h2 class="text-base font-bold text-white">Spatial Utility & Sniper Vector Blueprint</h2>
+            <p class="text-xs text-slate-400">Hover any point to inspect player, agent, ability & round telemetry</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2.5 text-xs">
+            <select id="teamFilter" class="bg-slate-900 border border-slate-700 text-slate-200 rounded px-2 py-1">
+              <option value="all">Both Teams</option>
+              <option value="opponent">Opponent Only</option>
+              <option value="c9">Cloud9 Only</option>
+            </select>
+            <label class="flex items-center gap-1 cursor-pointer"><input id="layerUtil" type="checkbox" checked class="accent-sky-400" /><span class="text-sky-300">Utility</span></label>
+            <label class="flex items-center gap-1 cursor-pointer"><input id="layerVec" type="checkbox" checked class="accent-emerald-400" /><span class="text-emerald-300">3D Vectors</span></label>
+            <label class="flex items-center gap-1 cursor-pointer"><input id="layerOp" type="checkbox" checked class="accent-amber-400" /><span class="text-amber-300">First Bloods</span></label>
+          </div>
+        </div>
+        <div class="relative mt-3 bg-slate-950 rounded-lg border border-slate-800 overflow-hidden flex items-center justify-center">
+          <canvas id="tacticalCanvas" width="680" height="460" class="w-full h-auto block cursor-crosshair"></canvas>
+          <div id="mapTooltip" class="hidden pointer-events-none absolute z-20 bg-slate-900/95 border border-sky-400/50 text-xs text-white px-3 py-2 rounded-lg shadow-xl"></div>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center justify-between text-xs text-slate-400">
+          <span>Cyan Dots = C9 Utility | Pink Dots = Opponent Utility | Amber Diamonds = First Bloods</span>
+          <span id="pointCountLabel">0 points plotted</span>
+        </div>
+      </div>
+
+      <div class="lg:col-span-5 space-y-6">
+        <div class="c9-card rounded-xl p-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+            <h2 class="text-base font-bold text-white">Cloud9 Pre-Match Anti-Strat Playbook</h2>
+            <span class="text-[11px] px-2 py-0.5 rounded bg-sky-500/20 text-sky-300 font-semibold">Rules Decide, AI Explains</span>
+          </div>
+          <div id="playbookContainer" class="mt-3 space-y-3"></div>
+        </div>
+
+        <div class="c9-card rounded-xl p-4">
+          <h2 class="text-base font-bold text-white pb-2 border-b border-slate-800">Detected Utility & Tempo Exploits</h2>
+          <ul id="gapsContainer" class="mt-3 space-y-2 text-xs text-slate-300 list-disc pl-4"></ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="c9-card rounded-xl p-4">
+        <h2 class="text-base font-bold text-white pb-2 border-b border-slate-800">Ability Usage & Mean 3D Aim Yaw</h2>
+        <div id="abilitiesContainer" class="mt-3 space-y-2.5"></div>
+      </div>
+
+      <div class="c9-card rounded-xl p-4">
+        <h2 class="text-base font-bold text-white pb-2 border-b border-slate-800">Operator Tendency & Opening Duel Profiler</h2>
+        <div id="snipersContainer" class="mt-3 space-y-2.5"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let currentReport = null;
+    let plottedMarkers = [];
+
+    async function loadSeriesList() {
+      const c9Only = document.getElementById("c9OnlyToggle").checked;
+      const res = await fetch(`/api/v1/series?limit=50&cloud9_only=${c9Only}`);
+      const data = await res.json();
+      const select = document.getElementById("seriesSelect");
+      select.innerHTML = "";
+      data.series.forEach(s => {
+        const opt = document.createElement("option");
+        opt.value = s.series_id;
+        opt.textContent = `[${s.series_id}] ${s.teams} — ${s.event}`;
+        select.appendChild(opt);
+      });
+      if (data.series.length > 0) {
+        await loadScoutReport(data.series[0].series_id, null);
+      }
+    }
+
+    async function loadScoutReport(seriesId, mapName) {
+      document.getElementById("streamBadge").textContent = "STREAMING .ZST...";
+      const url = mapName ? `/api/v1/scout/full/${seriesId}?map_name=${encodeURIComponent(mapName)}` : `/api/v1/scout/full/${seriesId}`;
+      const res = await fetch(url);
+      currentReport = await res.json();
+
+      const mapSelect = document.getElementById("mapSelect");
+      const maps = currentReport.available_maps || [currentReport.selected_map];
+      mapSelect.innerHTML = maps.map((m, idx) => `<option value="${m}" ${m === currentReport.selected_map ? "selected" : ""}>Game ${idx + 1}: ${m.toUpperCase()}</option>`).join("");
+
+      renderDashboard(currentReport);
+    }
+
+    function renderDashboard(r) {
+      document.getElementById("streamBadge").textContent = r.source.toUpperCase();
+      document.getElementById("kpiTeams").textContent = r.metadata.teams || r.series_id;
+      document.getElementById("kpiMap").textContent = `Map: ${r.selected_map} | ${r.metadata.event}`;
+      document.getElementById("kpiCasts").textContent = r.utility_analysis.total_casts;
+      document.getElementById("kpiMatchRate").textContent = `3D Aim Vector Sync: ${r.utility_analysis.supplement_3d_match_rate}%`;
+      document.getElementById("kpiOpBuys").textContent = `${r.operator_profiler.net_operator_buys} Op / ${r.operator_profiler.opening_duels_tracked} FB`;
+      document.getElementById("kpiDuels").textContent = `Reverted Purchases Filtered: ${r.operator_profiler.undone_purchases_reverted}`;
+      document.getElementById("kpiRollback").textContent = `${r.rolled_back_games_excluded ?? 0} Abandoned Maps Excluded`;
+
+      const pb = document.getElementById("playbookContainer");
+      pb.innerHTML = r.anti_strat_playbook.map(item => `
+        <div class="p-3 rounded-lg bg-slate-900/90 border border-sky-500/25">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-sky-400">${item.category}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold">${item.priority}</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-1"><strong>Trigger:</strong> ${item.trigger}</p>
+          <p class="text-xs text-emerald-300 mt-1.5"><strong>C9 Counter:</strong> ${item.recommended_c9_counter}</p>
+        </div>
+      `).join("");
+
+      const gaps = document.getElementById("gapsContainer");
+      gaps.innerHTML = (r.utility_analysis.detected_gaps || []).map(g => `<li>${g}</li>`).join("") || "<li>Balanced utility distribution detected.</li>";
+
+      const abBox = document.getElementById("abilitiesContainer");
+      const maxAb = Math.max(1, ...(r.utility_analysis.top_abilities || []).map(a => a.count));
+      abBox.innerHTML = (r.utility_analysis.top_abilities || []).map(a => {
+        const pct = Math.round((a.count / maxAb) * 100);
+        return `
+          <div>
+            <div class="flex justify-between text-xs mb-1">
+              <span class="font-semibold text-white">${a.ability} <span class="text-slate-400">(${a.agent})</span></span>
+              <span class="text-sky-400">${a.count} casts • Yaw ${a.avg_aim_yaw_deg}°</span>
+            </div>
+            <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div class="h-full bg-sky-500 rounded-full" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      const snBox = document.getElementById("snipersContainer");
+      const snipers = r.operator_profiler.primary_snipers || [];
+      if (snipers.length > 0) {
+        snBox.innerHTML = snipers.map(s => `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+            <div>
+              <p class="font-bold text-white">${s.player} <span class="text-sky-400">(${s.team})</span></p>
+              <p class="text-slate-400">Verified Op Rounds: ${s.net_buys} • Opening First Bloods: ${s.opening_first_bloods ?? 0}</p>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-amber-500/20 text-amber-300 font-bold">${s.opening_duel_win_rate}% FB Win</span>
+          </div>
+        `).join("");
+      } else {
+        const hotspots = r.operator_profiler.sniper_hotspots || [];
+        const counts = {};
+        hotspots.forEach(h => { counts[h.player] = (counts[h.player] || 0) + 1; });
+        const entries = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0, 5);
+        snBox.innerHTML = entries.map(([player, fb]) => `
+          <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+            <div>
+              <p class="font-bold text-white">${player}</p>
+              <p class="text-slate-400">Opening Duel Impact (Rifle/Eco-Heavy Map)</p>
+            </div>
+            <span class="px-2.5 py-1 rounded bg-sky-500/20 text-sky-300 font-bold">${fb} First Bloods</span>
+          </div>
+        `).join("") || "<p class='text-xs text-slate-400'>No opening duel telemetry recorded.</p>";
+      }
+
+      drawTacticalMap(r);
+    }
+
+    function passTeamFilter(teamName) {
+      const mode = document.getElementById("teamFilter").value;
+      if (mode === "all") return true;
+      const isC9 = (teamName || "").toLowerCase().includes("cloud9");
+      return mode === "c9" ? isC9 : !isC9;
+    }
+
+    function drawTacticalMap(r) {
+      const canvas = document.getElementById("tacticalCanvas");
+      const ctx = canvas.getContext("2d");
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+      plottedMarkers = [];
+
+      ctx.fillStyle = "#050912";
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "rgba(56, 189, 248, 0.12)";
+      ctx.lineWidth = 1;
+      for (let x = 40; x < W; x += 40) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+      for (let y = 40; y < H; y += 40) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+
+      const zones = [
+        { x: 90, y: 70, w: 150, h: 130, label: "SECTOR A" },
+        { x: 275, y: 155, w: 130, h: 150, label: "MID LANE" },
+        { x: 440, y: 70, w: 150, h: 130, label: "SECTOR B/C" },
+        { x: 220, y: 340, w: 240, h: 80, label: "SPAWN / STAGING" }
+      ];
+      ctx.strokeStyle = "rgba(148, 163, 184, 0.35)";
+      ctx.fillStyle = "rgba(15, 23, 42, 0.55)";
+      ctx.font = "bold 11px monospace";
+      zones.forEach(z => {
+        ctx.fillRect(z.x, z.y, z.w, z.h);
+        ctx.strokeRect(z.x, z.y, z.w, z.h);
+        ctx.fillStyle = "rgba(148, 163, 184, 0.65)";
+        ctx.fillText(z.label, z.x + 8, z.y + 16);
+        ctx.fillStyle = "rgba(15, 23, 42, 0.55)";
+      });
+
+      const showUtil = document.getElementById("layerUtil").checked;
+      const showVec = document.getElementById("layerVec").checked;
+      const showOp = document.getElementById("layerOp").checked;
+
+      const pts = (r.utility_analysis.heatmap_points || []).filter(p => passTeamFilter(p.team));
+      pts.forEach(p => {
+        const px = (p.norm_x / 100) * W;
+        const py = (p.norm_y / 100) * H;
+        if (showVec && (p.aim_dx || p.aim_dy)) {
+          ctx.strokeStyle = "rgba(52, 211, 153, 0.45)";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(px, py);
+          ctx.lineTo(px + p.aim_dx * 22, py + p.aim_dy * 22);
+          ctx.stroke();
+        }
+        if (showUtil) {
+          ctx.fillStyle = (p.team || "").toLowerCase().includes("cloud9") ? "rgba(56, 189, 248, 0.85)" : "rgba(244, 114, 182, 0.85)";
+          ctx.beginPath();
+          ctx.arc(px, py, 3.8, 0, Math.PI * 2);
+          ctx.fill();
+          plottedMarkers.push({ x: px, y: py, title: `${p.player} (${p.team})`, detail: `R${p.round} • ${p.agent} -> ${p.ability}` });
+        }
+      });
+
+      const hotspots = (r.operator_profiler.sniper_hotspots || []).filter(h => passTeamFilter(h.team));
+      if (showOp) {
+        hotspots.forEach(h => {
+          const hx = (h.norm_x / 100) * W;
+          const hy = (h.norm_y / 100) * H;
+          ctx.fillStyle = "#fbbf24";
+          ctx.beginPath();
+          ctx.moveTo(hx, hy - 6);
+          ctx.lineTo(hx + 6, hy);
+          ctx.lineTo(hx, hy + 6);
+          ctx.lineTo(hx - 6, hy);
+          ctx.closePath();
+          ctx.fill();
+          plottedMarkers.push({ x: hx, y: hy, title: `FIRST BLOOD: ${h.player} (${h.team})`, detail: `Round ${h.round} • Eliminated ${h.victim || "Opponent"}` });
+        });
+      }
+      document.getElementById("pointCountLabel").textContent = `${plottedMarkers.length} telemetry vectors plotted`;
+    }
+
+    const canvasEl = document.getElementById("tacticalCanvas");
+    const tooltipEl = document.getElementById("mapTooltip");
+    canvasEl.addEventListener("mousemove", e => {
+      const rect = canvasEl.getBoundingClientRect();
+      const scaleX = canvasEl.width / rect.width;
+      const scaleY = canvasEl.height / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+      const hit = plottedMarkers.find(m => Math.hypot(m.x - mx, m.y - my) <= 8);
+      if (hit) {
+        tooltipEl.innerHTML = `<p class="font-bold text-sky-300">${hit.title}</p><p class="text-slate-300">${hit.detail}</p>`;
+        tooltipEl.style.left = `${Math.min(rect.width - 210, e.clientX - rect.left + 12)}px`;
+        tooltipEl.style.top = `${Math.max(8, e.clientY - rect.top - 36)}px`;
+        tooltipEl.classList.remove("hidden");
+      } else {
+        tooltipEl.classList.add("hidden");
+      }
+    });
+    canvasEl.addEventListener("mouseleave", () => tooltipEl.classList.add("hidden"));
+
+    document.getElementById("copyBriefBtn").addEventListener("click", () => {
+      if (!currentReport) return;
+      const lines = [
+        `# C9 StratLens Pre-Match Scouting Brief: ${currentReport.metadata.teams} (${currentReport.selected_map.toUpperCase()})`,
+        ...currentReport.anti_strat_playbook.map(p => `- [${p.priority}] ${p.category}: ${p.recommended_c9_counter}`)
+      ];
+      navigator.clipboard.writeText(lines.join(String.fromCharCode(10)));
+      const btn = document.getElementById("copyBriefBtn");
+      btn.textContent = "Copied!";
+      setTimeout(() => btn.textContent = "Copy Coach Brief", 1800);
+    });
+
+    document.getElementById("seriesSelect").addEventListener("change", e => loadScoutReport(e.target.value, null));
+    document.getElementById("mapSelect").addEventListener("change", e => loadScoutReport(document.getElementById("seriesSelect").value, e.target.value));
+    document.getElementById("c9OnlyToggle").addEventListener("change", loadSeriesList);
+    document.getElementById("teamFilter").addEventListener("change", () => currentReport && drawTacticalMap(currentReport));
+    ["layerUtil", "layerVec", "layerOp"].forEach(id => {
+      document.getElementById(id).addEventListener("change", () => currentReport && drawTacticalMap(currentReport));
+    });
+
+    loadSeriesList();
+  </script>
+</body>
+</html>
